@@ -219,13 +219,17 @@ const drawGraph = (container, nodeData, size, clickable) => {
             return 'translate(-80,' + ((i * legendHeight) + 10) + ')';
           }
         });
+//        .append('text')
+//        .attr('x', '30')
+//        .attr('y', '30');
 
 ////// THIS BROKE IN v4, go back and fix this
 //    legend.append('text')
 //      .attr({
 //        x: 30,
 //        y: 15}) 
-//
+//      .attr('x', '30')
+//      .attr('y', '15')
 //      .text(d => {
 //        return (d.label === "" ? `${categoriesSpendingFormat(nodeData.total)}`
 //                : (nodeData.percentage * 100 >= 0.1 ? `${round(nodeData.percentage * 100, 1)}%` : '0.1% >'));
@@ -526,9 +530,6 @@ function treeMap(categoriesData) {
         .size([width, height])
         .round(true)
         .padding(1);
-//    (d3.hierarchy(categoriesData)
-//     .sum(d => d.total)
-//     .sort((a, b) => b.height - a.height || b.total - a.total));
 
     let bigTotal = categoriesData.map(i => i.total).reduce((a,b) => a + b);
     categoriesSpendingFormat(bigTotal); // convert
@@ -542,11 +543,11 @@ function treeMap(categoriesData) {
     };
 
     categoriesData.unshift(rootNode); // add root node to beginning of array
-//    console.log(categoriesData);
+
 
     let stratify = d3.stratify()
         .id(function(d) {
-          console.log(d);
+//          console.log(d);
           return d.name; })
         .parentId(function(d) { return d.parent; });
 
@@ -570,10 +571,10 @@ function treeMap(categoriesData) {
 
     leaf.append('text')
       .attr('x', function(d) {return d.x0; })
-      .attr('y', function(d) {return d.y0; })
-      .text(d => {
-        return d.id + "\n" + format(d.value);
-      });
+      .attr('y', function(d) {return d.y0; });
+//      .text(d => {
+//        return d.id + "\n" + format(d.value);
+//      });
         
 
     leaf.append("rect")
@@ -582,28 +583,6 @@ function treeMap(categoriesData) {
       .attr("fill-opacity", 0.6)
       .attr("width", d => d.x1 - d.x0)
       .attr("height", d => d.y1 - d.y0);
-
-
-
-    // leaves now..
-//    treeMapContainer
-//    .selectAll(".node")
-//    .data(root.leaves())
-//    .enter().append("div")
-//      .attr("class", "node")
-//      .attr("title", function(d) { return d.name + "\n" + d.total; })
-//      .style("left", function(d) { return d.x0 + "px"; })
-//      .style("top", function(d) { return d.y0 + "px"; })
-//      .style("width", function(d) { return d.x1 - d.x0 + "px"; })
-//      .style("height", function(d) { return d.y1 - d.y0 + "px"; })
-//      .style("background", function(d) { while (d.depth > 1) d = d.parent; return color(d.name); })
-//    .append("div")
-//      .attr("class", "node-label")
-//      .text(function(d) { return d.name; })
-//    .append("div")
-//      .attr("class", "node-value")
-//      .text(function(d) { return d.total; });
-    
 
 
   }); 
@@ -780,15 +759,12 @@ d3.csv("/data-lab-data/Edu_PSC.csv",(data) => {
   categoriesData.sort((a, b) => { return b.percentage - a.percentage; });
 
   paginate(categoriesData, pageSize, currPage)
-    .forEach(n => { drawGraph(graphContainer, n, { height: 200, width: 200 }, true); });             //draw donut chart in charts container
+    .forEach(n => { drawGraph(graphContainer, n, { height: 200, width: 200 }, true); }); // draw donut chart in charts container
 
-  //paginate(parentdonutData, pageSize, currPage)
-  //    .forEach(n => { drawChildGraph(childrenPanel, n, { height: 200, width: 200}); });
 
   /**
    * Adding on.. he does everything in a "main method"... will follow...
    */
-
 
   createTable(categoriesTable, ['name', 'percentage', 'total']); // table view
   treeMap(categoriesData); // testing for now, will put on SVG button click
@@ -825,13 +801,5 @@ d3.csv("/data-lab-data/Edu_PSC.csv",(data) => {
     $('#investmentCategories_panel_back_btn').css('display', 'none'); // donut 
     $('#categoriesChartContainer').css('display', 'none'); // donut 
   });
-
-
-
-  // Graph View (Donut)
-//  $(graphBtn).click(function () {
-//    console.log('toggle');
-//    $(graphContainer).toggle(); // hide graph when show table
-//  });
 
 });

@@ -686,15 +686,37 @@ $unchecked-color: #888;
     height: 600px;
   }
 
+  #sectionFourTreemapSidebar {
+    width: 30%;
+    height: 600px;
+//    margin-left: 75px;
+  }
+
+  #sectionFourTreemap {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
   #sectiontwoTreemap {
     margin-left: 200px;
   }
 
   .sidebarList {
-    box-shadow: rgba(0,0,0, .4);
+//    box-shadow: rgba(0,0,0, .4);
     text-align: left;
     font-size: 9px;
     height: 600px;
+    width: auto;
+    overflow: scroll;
+    overflow-y: scroll;
+  }
+
+  .sectionFourSidebarList {
+//    box-shadow: rgba(0,0,0, .4);
+    text-align: left;
+    font-size: 9px;
+    height: 600px;
+    margin-left: 75px;
     width: auto;
     overflow: scroll;
     overflow-y: scroll;
@@ -719,8 +741,14 @@ $unchecked-color: #888;
   }
 
   #sectionFourTreemapContainerDiv {
+    margin-top: 25px;
     display: none;
     margin-top: 100px;
+  }
+
+  #invisRect {
+    opacity: 100%;
+    visibility: hidden;
   }
   
 

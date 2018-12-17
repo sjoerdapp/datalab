@@ -15,125 +15,68 @@ const sectionFourtreemapBtn = document.getElementById('sectionFourTreemapBtn');
 
 
 /*
- --------------------------------------------------------------------------------------------------------------------
- *   functions
- *--------------------------------------------------------------------------------------------------------------------
- */
+  --------------------------------------------------------------------------------------------------------------------
+  *   functions
+  *--------------------------------------------------------------------------------------------------------------------
+  */
 
-function createTable(container, columns) {
-  d3.csv("/data-lab-data/Edu_PSC.csv", function (error, data) {
-
-    let tableData = data;
-
-    /**
-     * Table START
-     */
-    let sortAscending = true;
-    let table = d3.select(container).append('table')
-        .attr('class', 'display compact')
-        .attr('id', 'sectionFourCatTable'); // id given to table for Datatables.js
-
-    let titles = ['State', '% of Total', 'Investment Amount'];
-
-    let headers = table.append('thead').append('tr')
-        .selectAll('th')
-        .data(titles).enter()
-        .append('th')
-        .text(function (d) {
-          return d;
-        })
-        .on('click', function (d) {
-          headers.attr('class', 'header');
-
-          if (sortAscending) {
-            rows.sort(function (a, b) { return b[d] < a[d]; });
-            sortAscending = false;
-            this.className = 'aes';
-          } else {
-            rows.sort(function (a, b) { return b[d] > a[d]; });
-            sortAscending = true;
-            this.className = 'des';
-          }
-        });
-
-    let rows = table.append('tbody')
-        .selectAll('tr')
-        .data(tableData).enter()
-        .append('tr')
-        .on('click', function (d) {
-          createSecondaryTableView(d.name, ['Type', 'Awarded Amount', '% of Total']); // going to pass in the row value and columns we want
-        });
-
-    rows.selectAll('td')
-      .data(function (row) {
-        return columns.map(function (column) {
-          return { column: column, value: row[column] };
-        });
-      }).enter()
-      .append('td')
-      .classed('name', function (d) {
-        return d.column == 'name';
-      })
-      .classed('percentage', function (d) {
-        return d.column == 'percentage';
-      })
-      .classed('total', function (d) {
-        return d.column == 'total';
-      })
-      .text(function (d) {
-        return d.value;
-      })
-      .attr('data-th', function (d) {
-        return d.name;
-      });
-
-    // use DataTables JS and attach in D3 callback - DOM problems begone
-    $(document).ready(function () {
-      $('#sectionFourCatTablen').DataTable({
-        searching: true,
-        paging: true,
-        scrollY: true,
-        columnDefs: [{
-          className: 'mdl-data-table__cell--non-numeric'
-        }]
-      });
-    });
+// Find the nodes within the specified rectangle.
+function search(quadtree, x0, y0, x3, y3) {
+  let validData = [];
+  quadtree.visit(function(node, x1, y1, x2, y2) {
+    var p = node.data;
+    if (p) {
+      p.selected = (p[0] >= x0) && (p[0] < x3) && (p[1] >= y0) && (p[1] < y3);
+      if (p.selected) {
+        validData.push(p);
+      }
+    }
+    return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
   });
-};
+  return validData;
+}
 
-
-
+// Collapse the quadtree into an array of rectangles.
+function nodes(quadtree) {
+  var nodes = [];
+  quadtree.visit(function(node, x0, y0, x1, y1) {
+    node.x0 = x0, node.y0 = y0;
+    node.x1 = x1, node.y1 = y1;
+    nodes.push(node);
+  });
+  return nodes;
+}
 
 /**
- * Create First TreeMap (could be reusable later)
- * for Section2 Table/view Toggle
+ * for Section4 Tree!
+ * More or less the exact same as Section2...
  */
-function treeMap(categoriesData) {
-  d3.csv('/data-lab-data/Edu_PSC.csv', (data) => {
+function sectionFourTreeMap() {
+  d3.csv('../data-lab-data/EDU_v2_base_data.csv', (data) => {
 
 
-    let parentNames = data.map(d => d.parent_name);
-    let filteredNames = parentNames.filter(function(item, index){
-      return parentNames.indexOf(item) >= index;
+    let schools = data.map(d => d.Recipient);
+    let filteredSchools = schools.filter(function(item, index){
+      return schools.indexOf(item) >= index;
     });
 
-    //console.log(data); // whole data listout again
 
     // Going to do Sidebar Data first.
     // Just a simple list
-    let sidebarList = d3.select('#treemapSidebar')
-        .append('ul').attr('class', 'sidebarList');
+    let sidebarList = d3.select('#sectionFourTreemapSidebar')
+        .append('ul').attr('class', 'sectionFourSidebarList');
 
     sidebarList.selectAll('li')
-      .data(filteredNames)
+      .data(filteredSchools)
       .enter()
       .append('li')
-      .attr('class', 'sidebarListElement')
+      .attr('class', 'sidebarListElement') // use for on click maybe?
       .html(String);
 
     ///////////////////////
     // start Treemappin' // 
-    let width = 2000,
+    ///////////////////////
+    let width = 1000,
         height = 600;
 
     let color = d3.scaleOrdinal()
@@ -146,39 +89,35 @@ function treeMap(categoriesData) {
         .size([width, height])
         .round(true)
         .padding(1);
-//    (d3.hierarchy(categoriesData)
-//     .sum(d => d.total)
-//     .sort((a, b) => b.height - a.height || b.total - a.total));
 
-    let bigTotal = categoriesData.map(i => i.total).reduce((a,b) => a + b);
-    categoriesSpendingFormat(bigTotal); // convert
-    categoriesData.forEach(function(i) { i.parent = "rootNode"; }); // add parent property to each child of root node
+
+    let bigTotal = data.map(i => i.Total_Federal_Investment).reduce((a,b) => a + b);
+    data.forEach(function(i) { i.parent = "rootNode"; }); // add parent property to each child of root node for stratify
 
     let rootNode = {
-      abbrev: "root",
       name: 'rootNode',
-      total: bigTotal,
+      Total_Federal_Investment: bigTotal,
       parent: "",
     };
 
-    categoriesData.unshift(rootNode); // add root node to beginning of array
-//    console.log(categoriesData);
+    data.unshift(rootNode); // add root node to beginning of array
+    //    console.log(data);
 
     let stratify = d3.stratify()
         .id(function(d) {
-          console.log(d);
-          return d.name; })
+          return d.name;
+        })
         .parentId(function(d) { return d.parent; });
 
-    let root = stratify(categoriesData)
-      .sum(function(d) { return d.total; })
-      .sort(function(a, b) { return b.height - a.height || b.total - a.total; });
+    let root = stratify(data)
+        .sum(function(d) { return d.Total_Federal_Investment; })
+        .sort(function(a, b) { return b.height - a.height || b.Total_Federal_Investment - a.Total_Federal_Investment; });
 
-    let treeMapContainer = d3.select('#sectiontwoTreemap')
+    let treeMapContainer = d3.select('#sectionFourTreemap') // section 4! 
         .append('svg')
         .style('width', width)
         .style('height', height);
-//        .style('position', 'relative');
+    //        .style('position', 'relative');
 
     treeMappy(root); // stratify and get the root ready
 
@@ -190,11 +129,10 @@ function treeMap(categoriesData) {
 
     leaf.append('text')
       .attr('x', function(d) {return d.x0; })
-      .attr('y', function(d) {return d.y0; })
-      .text(d => {
-        return d.id + "\n" + format(d.value);
-      });
-        
+      .attr('y', function(d) {return d.y0; });
+    //      .text(d => {
+    //        return d.id + "\n" + format(d.value);
+    //      });
 
     leaf.append("rect")
       .attr("id", d => d.id)
@@ -222,7 +160,8 @@ const drawMap = (container) => {
       .translate([width / 2, height / 2]);
 
   var path = d3.geoPath()
-      .projection(projection);
+      .projection(projection)
+      .pointRadius(1);
 
   // D3-tip Tooltip
   let toolTip = d3.tip()
@@ -238,13 +177,6 @@ const drawMap = (container) => {
       .attr("height", height);
 
   svg.call(toolTip); // add tooltip
-
-  //  svg.append("rect")
-  //.attr("class", "background")
-  //.attr("width", width)
-  //.attr("height", height)
-  //.on("click", clicked);
-
 
   // what our map element is drawn on 
   let g = svg.append("g");
@@ -309,8 +241,7 @@ const drawMap = (container) => {
           .on('click', function(d) {
             svg.selectAll('circle').remove();
             
-            
-            // redrawing map ! 
+            // redrawing map to show all points!
             svg.selectAll("circle")
               .data(data)
               .enter()
@@ -323,7 +254,7 @@ const drawMap = (container) => {
                 //console.log(long, lat);
                 return "translate(" + projection([long, lat]) + ")";
               })
-              .attr('r', 20)
+              .attr('r', 4)
               .style("fill", "rgb(217,91,67)")
               .style("opacity", 0.85)
               .on('mouseover', toolTip.show)
@@ -331,23 +262,93 @@ const drawMap = (container) => {
             
           });
 
-      svg.selectAll("circle")
-        .data(data)
-        .enter()
-        .append("svg:circle")
-        .attr("transform", function (d) {
+      /////////////////////////
+      // PR Quadtree Section //
+      /////////////////////////
+      var clusterPoints = [];
+      var clusterRange = 45;
+      
+//      var grid = svg.append('g')
+//          .attr('class', 'grid');
+//      
+//      for (var x = 0; x <= width; x += clusterRange) {
+//        for (var y = 0; y <= height; y+= clusterRange) {
+//          grid.append('rect')
+//            .attr('x', x)
+//            .attr('y', y)
+//            .attr('width', clusterRange)
+//            .attr('height', clusterRange)
+//            .attr('class', 'grid')
+//            .attr('id', 'invisRect');
+//        }
+//      }
 
-          let long = parseFloat(d.LONGITUDE);
-          let lat = parseFloat(d.LATITUDE);
-          if (isNaN(long || lat)) { long = 0, lat = 0; }
-          //console.log(long, lat);
-          return "translate(" + projection([long, lat]) + ")";
-        })
-        .attr('r', 5)
-        .style("fill", "rgb(217,91,67)")
-        .style("opacity", 0.85)
-        .on('mouseover', toolTip.show)
-        .on('mouseout', toolTip.hide);
+      // for this data structure,
+      // we need to return an Array of Arrays! (important!)
+      let latlongpoints = data.map(function(x) {
+        let point = [
+          x.LATITUDE,
+          x.LONGITUDE
+        ];
+        return point;
+      });
+                                   
+      console.log(latlongpoints); // should be array of arrays 
+
+      let qTree = d3.quadtree()
+          .addAll(latlongpoints); // adding points to quadtree
+
+      console.log(qTree);
+
+      console.log('before for loop');
+      for (let a = 0; a <= width; a += clusterRange) {
+        for (let b = 0; b <= height; b += clusterRange) {
+          let searched = search(qTree, a, b, a + clusterRange, b + clusterRange);
+          console.log(searched); // only (3) is working?
+
+          let centerPoint = searched.reduce(function(prev, current) {
+            return [prev[0] + current[0], prev[1] + current[1]];
+          }, [0, 0]);
+          
+          centerPoint[0] = centerPoint[0] / searched.length;
+          centerPoint[1] = centerPoint[1] / searched.length;
+          centerPoint.push(searched);
+          
+          if (centerPoint[0] && centerPoint[1]) {
+            clusterPoints.push(centerPoint);
+          }
+        }
+      }
+
+      svg.selectAll(".centerPoint")
+        .data(clusterPoints)
+        .enter().append("circle")
+        .attr("class", function(d) {return "centerPoint";})
+        .attr("cx", function(d) {return d[0];})
+        .attr("cy", function(d) {return d[1];})
+        .attr("fill", '#FFA500')
+        .attr("r", 6)
+        .on("click", function(d, i) {
+          console.log(d);
+        });
+
+      // ! This is where we draw the circles on the map
+//       svg.selectAll("circle")
+//        .data(data)
+//        .enter()
+//        .append("svg:circle")
+//        .attr("transform", function (d) {
+//
+//          let long = parseFloat(d.LONGITUDE);
+//          let lat = parseFloat(d.LATITUDE);
+//          if (isNaN(long || lat)) { long = 0, lat = 0; }
+//          return "translate(" + projection([long, lat]) + ")";
+//        })
+//        .attr('r', 5)
+//        .style("fill", "rgb(217,91,67)")
+//        .style("opacity", 0.85)
+//        .on('mouseover', toolTip.show)
+//        .on('mouseout', toolTip.hide);
 
 
       dropDown.on("change", function () {
@@ -436,7 +437,8 @@ const drawMap = (container) => {
   *--------------------------------------------------------------------------------------------------------------------
   */
 
-drawMap(mapContainer);
+drawMap(mapContainer); // section 4 USA map
+sectionFourTreeMap(); // section 4 treemap
 
 /*
   Event Handlers
@@ -446,30 +448,18 @@ $(sectionFourtableBtn).click(function() {
   $('#sectionFourTableContainerDiv').css('display', 'flex'); // our table!
   $('#sectionFourTreemapContainerDiv').css('display', 'none'); // treemap
   $('#mapContainerDiv').css('display', 'none'); // donut 
-//  $('#categoriesPanel').css('display', 'none'); // donut 
-//  $('#investmentCategories_panel_chart').css('display', 'none'); // donut 
-//  $('#investmentCategories_panel_back_btn').css('display', 'none'); // donut 
-//  $('#categoriesChartContainer').css('display', 'none'); // donut 
 });
 
 $(sectionFourmapBtn).click(function() {
   console.log('clicking map button!');
-  $('#categoriesPanel').css('display', 'inline-block'); // donut! (set to inline-block from before)
-  $('#investmentCategories_panel_chart').css('display', 'inline-block'); // donut 
-  $('#investmentCategories_panel_back_btn').css('display', 'inline-block'); // donut 
-  $('#categoriesChartContainer').css('display', 'none'); // donut 
-  $('#tableContainerDiv').css('display', 'none'); // table
-  $('#treemapContainerDiv').css('display', 'none'); // treemap
+  $('#mapContainerDiv').css('display', 'flex'); // donut! (set to inline-block from before)
 });
 
 $(sectionFourtreemapBtn).click(function() {
   console.log('clicking treemap button!');
-  $('#treemapContainerDiv').css('display', 'flex'); // tree
+  $('#sectionFourTreemapContainerDiv').css('display', 'flex'); // tree
   $('#tableContainerDiv').css('display', 'none'); // table 
-  $('#categoriesPanel').css('display', 'none'); // donut
-  $('#investmentCategories_panel_chart').css('display', 'none'); // donut 
-  $('#investmentCategories_panel_back_btn').css('display', 'none'); // donut 
-  $('#categoriesChartContainer').css('display', 'none'); // donut 
+  $('#mapContainerDiv').css('display', 'none'); // usa map
 });
 
 
