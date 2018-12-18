@@ -4,9 +4,9 @@ import { scaleLinear } from 'd3-scale';
 import { line } from 'd3-shape';
 import { min } from 'd3-array';
 import { easeCubicOut as connectorEase } from 'd3-ease';
-import { dotFactory, receiptsConstants } from '../receipts-utils';
+import { dotFactory, receiptsConstants } from '../../revenue/receipts-utils';
 import { getElementBox, translator, getTransform, establishContainer, simplifyNumber } from '../../utils';
-import { getData } from './data';
+import { getData } from '../../revenue/categories/data';
 import colors from '../../colors.scss';
 import { addTextElements } from './textElements';
 import { getZoomState } from './zoom';
@@ -231,6 +231,7 @@ function renderDetailContainer() {
     if (detailContainer) {
         detailContainer.remove();
     }
+    console.log('renderDetailContainer', svg)
 
     baseContainerBox = getElementBox(baseContainer);
 
@@ -241,6 +242,7 @@ function renderDetailContainer() {
         .classed('detail-container', true)
         .lower()
         .attr('opacity', 0);
+    console.log('detailContainer:', detailContainer);
 }
 
 function transitionDetailContainer() {
@@ -313,6 +315,26 @@ export function section2_2_init(_baseContainer) {
     baseContainer = _baseContainer;
 
     resolver();
+}
+
+export function destroyDetails(){
+    baseContainer = null;
+    detailContainer = null;
+    textContainer = null;
+
+    baseContainer = null;
+    textContainer = null;
+    detailContainer = null;
+    currentDetailIndex = null;
+    data = null;
+    x = null;
+    x0 = null;
+    connectors = null;
+    clearance = null;
+    yOffset = null;
+    parentRect = null;
+    activeCategory = null;
+    baseContainerBox = null;
 }
 
 export function showDetail(d) {

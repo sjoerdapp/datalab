@@ -26,6 +26,7 @@ export function renderChart(data) {
 
     initDropShadow();
 
+    zoomThreshold = setThreshold(data);
     trendView(data, svg, {
         width: 500,
         zoomThreshold

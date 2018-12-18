@@ -176,6 +176,10 @@ export function zoomInit(baseContainer, baseDimensions, zoomTriggerX, zoomCallba
     return 'zoomComponent';
 }
 
+export function resetZoom(){
+    state = 'out';
+}
+
 export function getZoomState() {
     return state;
 }

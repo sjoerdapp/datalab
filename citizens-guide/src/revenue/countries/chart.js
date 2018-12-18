@@ -164,6 +164,7 @@ function placeCountryLabels() {
     countryLabels.exit().remove();
 
     setTimeout(function () {
+        const textHeight = 16; //16 pixel height
         countryLabels.enter()
             .append('text')
             .attr('transform', function (d, i) {
@@ -172,7 +173,7 @@ function placeCountryLabels() {
             .text(d => d.country)
             .attr('y', dimensions.rowHeight / 2 + dimensions.barHeight / 2 - 6)
             .attr('x', 20)
-            .attr('font-size', 16)
+            .attr('font-size', textHeight)
             .attr('width', function (d) {
                 d.barX1 = d3.max([scales.x(d.amount), scales.x(0)]);
             })
@@ -182,16 +183,11 @@ function placeCountryLabels() {
                     textWidth = getElementBox(selection).width;
 
                 let x, y;
-
-                console.log('textWidth:', textWidth, 'max:', max);
-                console.log('this:', this, 'selection:', selection);
                 if (textWidth > max) {
                     x = selection.attr('x');
-                    y = selection.attr('y');
+                    y = selection.attr('y') - textHeight / 2;
                     wordWrap(selection, max);
                     selection.selectAll('tspan').attr('x', x).attr('y',y);
-
-                    console.log('')
                 }
             });
     }, timeoutForAdd)
