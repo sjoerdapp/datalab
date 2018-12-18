@@ -16,5 +16,5 @@ matrix:
     node_js:
       - "node"
     install:
-      - npm install
+      - npm install --prefix citizens-guide
     script: npm run build --prefix citizens-guide
