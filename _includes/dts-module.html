@@ -62,7 +62,7 @@
   .dtsm-tas-header {
     font-size: 14px;
     font-weight: 300;
-    line-height: 175%;
+    line-height: 150%;
     opacity: .8;
   }
   
@@ -70,7 +70,7 @@
     font-size: 14px;
     text-transform: uppercase;
     font-weight: 600;
-    line-height: 175%;
+    line-height: 150%;
     opacity: .8;
   }
   
@@ -118,87 +118,21 @@
         <div class="dtsm-beta">BETA</div>
         <div class="dtsm-header-text">Visualizing the Daily Treasury Statement</div>
       </div>
-      <div class="dtsm-subheader">How much did the federal government spend today?</div>
+      <div class="dtsm-subheader">How much does the federal government spend each day?</div>
     </a>
   </div>
   <div class="dtsm-vseparator"></div>
   <div class="dtsm-img"></div>
   <div class="dtsm-vseparator"></div>
   <div class="dtsm-right-column">
-    <div class="dtsm-dollars">$978.4M</div>
+    <div class="dtsm-dollars">$</div>
     <div class="dtsm-tas-container">
       <div class="dtsm-tas-header">Total Amount Spent</div>
-      <div class="dtsm-tas-subheader">August 24, 2018</div>
+      <div class="dtsm-tas-subheader">January 1, 2018</div>
     </div>
   </div>
 </div>
 
+<script src="{{ "/js/babel-polyfill.min.js" | prepend: site.baseurl }}"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
-
-<script>
-
-const dollarFormatter = d => d3.format("$,.3s")(d).replace(/G/,"B");
-const dateFormatter = d3.timeFormat("%B %e, %Y");
-
-var margin = {top: 0, right: 20, bottom: 30, left: 75},
-    width = 300 - margin.left - margin.right,
-    height = 80 - margin.top - margin.bottom;
-
-// parse the date / time
-var parseTime = d3.timeParse("%Y-%m-%d");
-
-var x = d3.scaleTime().range([0, width]);
-var y = d3.scaleLinear().range([height, 0]);
-
-var valueline = d3.line()
-    .x(d => x(d.date))
-    .y(d => y(d.value));
-
-var svg = d3.select(".dtsm-img").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-d3.csv("/data-lab-data/dts/recent_30.csv", type, function(error, data) {
-  if (error) throw error;
-
-  console.log(data);
-
-  x.domain(d3.extent(data, function(d) { return d.date; }));
-  y.domain([0, d3.max(data, function(d) { return d.value; })]);
-
-  let lastEntry = data[data.length - 1];
-  let lastDate = lastEntry.date;
-  let lastValue = lastEntry.value;
-
-  svg.append("path")
-      .data([data])
-      .attr("class", "line")
-      .attr("d", valueline);
-
-  let yAxis = d3.axisLeft(y).ticks(3).tickFormat(dollarFormatter);
-
-  svg.append("g")
-      .call(yAxis)
-      .attr("transform", "translate(-10)");
-
-  console.log(x(lastDate));
-  console.log(y(lastValue));
-
-  svg.append("circle")
-    .attr("r", 7)
-    .attr("stroke-width", 1)
-    .attr("transform", "translate(" + (x(lastDate)) + "," + (y(lastValue)) + ")");
-
-  d3.select(".dtsm-dollars").text(dollarFormatter(lastValue));
-  d3.select(".dtsm-tas-subheader").text(dateFormatter(lastDate));
-});
-
-function type(d) {
-  d.date = parseTime(d.date);
-  d.value = +d.value * 1000000; // is this wrong? should it be fytd, mtd, and today instead? also multiply?
-  return d;
-}
-</script>
+<script src="{{site.baseurl}}/assets/js/dts-module.js"></script>

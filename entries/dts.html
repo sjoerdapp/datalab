@@ -1,13 +1,13 @@
 ---
 layout: dts
-menuname: DTS
-menuorder: 20
+menuname: DTS Tracker
+menuorder: 1
 header: DTS
 description: DTS
 banner: landings/federal.jpg
 alt: DTS
 permalink: dts.html
-category: nonentry
+category: entry
 ---
 
 <div class="dts-tt-container">
@@ -21,7 +21,7 @@ category: nonentry
 
 <div class="dts-container">
   <div class="header-container">
-    <div class="header-title">Vizualizing The Daily Treasury Statement</div>
+    <div class="header-title">Visualizing The Daily Treasury Statement</div>
     <div class="header-subtitle">How much does the federal government spend each day?</div>
     <div class="header-line-break"></div>
     <div class="header-sub-container">
@@ -104,5 +104,6 @@ category: nonentry
   link="dts-more.html"
 %}
 
+<script src="{{ "/js/babel-polyfill.min.js" | prepend: site.baseurl }}"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="{{site.baseurl}}/assets/js/dts.js"></script>

@@ -59,7 +59,7 @@ path.domain {
 }
 
 .dts-download-data {
-  color: #5b6160;
+  color: #4a4a4a;
 }
 
 .dts-download-data:hover {
@@ -166,20 +166,6 @@ path.domain {
   margin-left: 5px;
 }
 
-/*
-.dts-left-column, .dts-right-column {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-*/
-
-/*
-.daily-spending-container, .period-container, .frequency-container, .category-container {
-  margin-bottom: 25px;
-}
-*/
-
 .daily-spending-container {
   width: 175px;
   display: flex;
@@ -240,7 +226,7 @@ path.domain {
   line-height: 20px;
 }
 
-.dts-brush-start-date {
+.dts-brush-start-date, .dts-brush-end-date {
   color: #4A4A4A
 }
 
@@ -413,7 +399,7 @@ path.domain {
 }
 
 .dts-hyperlink {
-  color: #B3D3E3;
+  color: #574eca;
 }
 
 .dts-tt-amount {
@@ -476,7 +462,7 @@ path.domain {
   font-size: 12px;
   letter-spacing: .25px;
   text-align: center;
-  color: #999;
+  color: #757575;
   margin-bottom: 25px;
   line-height: 20px;
 }
@@ -487,14 +473,15 @@ path.domain {
   background-color: #deeded;
   margin-right: 10px;
   border-radius: 50%;
-  margin-top: 5px;
+  margin-top: 3px;
 }
 
 .dts-footnote-text {
   width: 99%;
   font-size: 12px;
-  letter-spacing: .75px;
-  line-height: 22px;
+  letter-spacing: .32px;
+  line-height: 16px;
+  text-align: left;
   color: #4A4A4A;
 }
 
