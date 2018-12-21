@@ -16,6 +16,7 @@ $color-spending-trend-lines:rgb(24,90,83);
 $color-spending-trend-circles:rgb(00,72,64);
 $color-deficit-primary:#B3532D;
 $color-debt-primary:#4A0072;
+$color-deficit-primary: #B3532D;
 
 :export {
     colorGrayDark: $color-gray-dark;
@@ -34,4 +35,5 @@ $color-debt-primary:#4A0072;
     textColorHeading: $text-color-heading;
     textColorParagraph: $text-color-paragraph;
     colorGrayCoolLight: $color-gray-cool-light;
+    colorDeficitPrimary: $color-deficit-primary;
 }
