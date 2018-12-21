@@ -5,12 +5,121 @@
   */
 const bubbleColor = '#0000ff';
 const bubbleChartContainer = document.getElementById('bubbleChartContainer');
+const sectionThreeTreemapBtn = document.getElementById('sectionThreeTreemapBtn');
 
 /*
   --------------------------------------------------------------------------------------------------------------------
   *   functions
   *--------------------------------------------------------------------------------------------------------------------
   */
+
+/**
+ * for Section3 Tree!
+ * More or less the exact same as Section2 and 4.
+ */
+function sectionThreeTreemap(agenciesData) {
+  d3.csv('../data-lab-data/Edu_PSC.csv', (data) => {
+    
+    console.log(agenciesData);
+
+    let agencies = data.map(d => d.agency);
+    let filteredSchools = agencies.filter(function(item, index){
+      return agencies.indexOf(item) >= index;
+    });
+
+    // Going to do Sidebar Data first.
+    // Just a simple list
+    let sidebarList = d3.select('#sectionThreeTreemmapSidebar')
+        .append('ul').attr('class', 'sectionThreeSidebarList');
+
+    sidebarList.append('input')
+      .attr('class', 'search')
+      .attr('class', 'searchPadding')
+      .attr('placeholder', 'Search...');
+
+    sidebarList.selectAll('li')
+      .data(filteredSchools)
+      .enter()
+      .append('li')
+      .attr('class', 'sidebarListElement') // use for on click maybe?
+//      .on('click', function(d) {
+//        createSecondaryTreemapTableSectFour(d, ['Type', 'Awarded Amount', '% of Total']);
+//        console.log(d);
+//      })
+      .html(String);
+
+    ///////////////////////
+    // start Treemappin' // 
+    ///////////////////////
+    let width = 1000,
+        height = 600;
+
+    let color = d3.scaleOrdinal()
+        .range(d3.schemeCategory10
+               .map(function(c) { c = d3.rgb(c); c.opacity = 0.6; return c; }));
+
+    let format = d3.format(",d");
+
+    let treeMappy = d3.treemap()
+        .size([width, height])
+        .round(true)
+        .padding(1);
+
+
+//    let bigTotal = data.map(i => i.Total_Federal_Investment).reduce((a,b) => a + b);
+    agenciesData.forEach(function(i) { i.parent = "rootNode"; }); // add parent property to each child of root node for stratify
+
+    let rootNode = {
+      name: 'rootNode',
+      obligation: '1000000',
+      parent: "",
+    };
+
+    data.unshift(rootNode); // add root node to beginning of array
+    //    console.log(data);
+
+    let stratify = d3.stratify()
+        .id(function(d) {
+          return d.name;
+        })
+        .parentId(function(d) { return d.parent; });
+
+    let root = stratify(data)
+        .sum(function(d) { return d.Total_Federal_Investment; })
+        .sort(function(a, b) { return b.height - a.height || b.Total_Federal_Investment - a.Total_Federal_Investment; });
+
+    let treeMapContainer = d3.select('#sectionThreeTreemap') // section 4! 
+        .append('svg')
+        .style('width', width)
+        .style('height', height);
+    //        .style('position', 'relative');
+
+    treeMappy(root); // stratify and get the root ready
+
+    let leaf = treeMapContainer
+        .selectAll('g')
+        .data(root.leaves())
+        .enter().append('g')
+        .attr("transform", d => `translate(${d.x0},${d.y0})`);
+
+    leaf.append('text')
+      .attr('x', function(d) {return d.x0; })
+      .attr('y', function(d) {return d.y0; });
+    //      .text(d => {
+    //        return d.id + "\n" + format(d.value);
+    //      });
+
+    leaf.append("rect")
+      .attr("id", d => d.id)
+      .attr("fill", function(d) { var a = d.ancestors(); return color(a[a.length - 2].id); })
+      .attr("fill-opacity", 0.6)
+      .attr("width", d => d.x1 - d.x0)
+      .attr("height", d => d.y1 - d.y0);
+
+
+  }); 
+}; // end function
+
 
 //takes bubble nodes information and sets radius between 10 and 60
 //based on percentage of total spending
@@ -164,8 +273,35 @@ d3.csv("/data-lab-data/Edu_PSC.csv"), (data) => {    //read in education data to
     return a;
   },[]);
 
-  addRadius(agenciesData);
 
+  // call all functions at end of main method //
+  // odd practice for javascript but following last dev's convention for time-sake //
+  addRadius(agenciesData);
   drawChart(bubbleChartContainer, agenciesData);
+  sectionThreeTreemap(agenciesData); // call treemap (default to hidden)
 };
+
+/*
+  Event Handlers
+*/
+//$(sectionFourtableBtn).click(function() {
+//  console.log('clicking table button!');
+//  $('#sectionFourTableContainerDiv').css('display', 'flex'); // our table!
+//  $('#sectionFourTreemapContainerDiv').css('display', 'none'); // treemap
+//  $('#mapContainerDiv').css('display', 'none'); // donut 
+//});
+
+//$(sectionFourmapBtn).click(function() {
+//  console.log('clicking map button!');
+//  $('#mapContainerDiv').css('display', 'flex'); 
+//  $('#sectionFourTreemapContainerDiv').css('display', 'none'); 
+//});
+//
+$(sectionThreeTreemapBtn).click(function() {
+  console.log('clicking treemap button!');
+  $('#sectionThreeTreemapContainerDiv').css('display', 'flex'); // tree
+  $('#tableContainerDiv').css('display', 'none'); // table 
+  $('#mapContainerDiv').css('display', 'none'); // usa map
+});
+
 

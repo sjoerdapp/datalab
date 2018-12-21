@@ -14,12 +14,6 @@ const sectionFourmapBtn = document.getElementById('sectionFourMapBtn');
 const sectionFourtreemapBtn = document.getElementById('sectionFourTreemapBtn');
 
 
-/*
-  --------------------------------------------------------------------------------------------------------------------
-  *   functions
-  *--------------------------------------------------------------------------------------------------------------------
-  */
-
 // Find the nodes within the specified rectangle.
 function search(quadtree, x0, y0, x3, y3) {
   let validData = [];
@@ -36,15 +30,68 @@ function search(quadtree, x0, y0, x3, y3) {
   return validData;
 }
 
-// Collapse the quadtree into an array of rectangles.
-function nodes(quadtree) {
-  var nodes = [];
-  quadtree.visit(function(node, x0, y0, x1, y1) {
-    node.x0 = x0, node.y0 = y0;
-    node.x1 = x1, node.y1 = y1;
-    nodes.push(node);
+/**
+ * 
+ * @param {*} parentName - name to search by
+ * Secondary Table (Investment) for Click event on treemap li
+ * Need to grab different data than "tableData" in last table draw
+ */
+function createSecondaryTreemapTableSectFour(parentName, columns) {
+  d3.csv("/data-lab-data/Edu_PSC.csv", function (error, data) {
+
+    d3.select('#sectionFourTreemapSidebarTable').remove(); // remove on click data 
+
+    /**
+     * Create Secondary Table (Investment Types Table)
+     */
+    let subTableDiv = d3.select('#sectionFourTreemapContainerDiv').append('div')
+        .attr('id', 'sectionFourTreemapSidebarTable');
+    let subTableHeaderText = subTableDiv.append('h4').html(parentName); //replace with data TR name...
+    subTableHeaderText.append('hr')
+      .style('width', '30%')
+      .style('display', 'flex');
+    subTableHeaderText.append('p').html('Investment Types').attr('class', 'investmenth4');
+    let subTable = subTableDiv.append('table')
+        .attr('class', 'subTableData')
+        .attr('align', 'center');
+
+    // this is all subject to change once i get some real data, woohoo
+    let titles = ['Type', 'Awarded Amount  ', '  % of Total'];
+    let mockData = [
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+    ];
+
+    let headers = subTable.append('thead').append('tr')
+        .selectAll('th')
+        .data(titles).enter()
+        .append('th')
+        .text(function (d) {
+          return d;
+        });
+
+    let rows = subTable.append('tbody')
+        .selectAll('tr')
+        .data(mockData).enter()
+        .append('tr');
+
+    rows.selectAll('td')
+      .data(function (row) {
+        return columns.map(function (column) {
+          return { column: column, value: row[column] };
+        });
+      }).enter()
+      .append('td')
+      .text(function (d) {
+        return d.value;
+      })
+      .attr('data-th', function (d) {
+        return d.name;
+      });
   });
-  return nodes;
 }
 
 /**
@@ -66,11 +113,20 @@ function sectionFourTreeMap() {
     let sidebarList = d3.select('#sectionFourTreemapSidebar')
         .append('ul').attr('class', 'sectionFourSidebarList');
 
+    sidebarList.append('input')
+      .attr('class', 'search')
+      .attr('class', 'searchPadding')
+      .attr('placeholder', 'Search...');
+
     sidebarList.selectAll('li')
       .data(filteredSchools)
       .enter()
       .append('li')
       .attr('class', 'sidebarListElement') // use for on click maybe?
+      .on('click', function(d) {
+        createSecondaryTreemapTableSectFour(d, ['Type', 'Awarded Amount', '% of Total']);
+        console.log(d);
+      })
       .html(String);
 
     ///////////////////////
@@ -151,7 +207,7 @@ function sectionFourTreeMap() {
 */
 const drawMap = (container) => {
 
-  var width = 1920,
+  var width = 1200,
       height = 1000,
       centered;
 
@@ -236,22 +292,20 @@ const drawMap = (container) => {
       // Clear Filter Box
       let clearfilter = d3.select('#filtersDiv').append('button')
           .attr('name', 'clearBtn')
-          .attr('id', 'clearnBtn')
+          .attr('id', 'clearBtn')
           .text('Clear Filter')
           .on('click', function(d) {
-            svg.selectAll('circle').remove();
-            
+            svg.selectAll('circle').remove(); // remove whatever is on the map currently
+            // a bit heavy, as we are redrawing all the circles on the DOM again. Consider a better method for production
             // redrawing map to show all points!
             svg.selectAll("circle")
               .data(data)
               .enter()
               .append("svg:circle")
               .attr("transform", function (d) {
-                
                 let long = parseFloat(d.LONGITUDE);
                 let lat = parseFloat(d.LATITUDE);
                 if (isNaN(long || lat)) { long = 0, lat = 0; }
-                //console.log(long, lat);
                 return "translate(" + projection([long, lat]) + ")";
               })
               .attr('r', 4)
@@ -265,23 +319,23 @@ const drawMap = (container) => {
       /////////////////////////
       // PR Quadtree Section //
       /////////////////////////
-      var clusterPoints = [];
-      var clusterRange = 45;
+      let clusterPoints = [];
+      let clusterRange = 45;
       
-//      var grid = svg.append('g')
-//          .attr('class', 'grid');
-//      
-//      for (var x = 0; x <= width; x += clusterRange) {
-//        for (var y = 0; y <= height; y+= clusterRange) {
-//          grid.append('rect')
-//            .attr('x', x)
-//            .attr('y', y)
-//            .attr('width', clusterRange)
-//            .attr('height', clusterRange)
-//            .attr('class', 'grid')
-//            .attr('id', 'invisRect');
-//        }
-//      }
+      let grid = svg.append('g')
+          .attr('class', 'grid');
+      
+      for (let x = 0; x <= width; x += clusterRange) {
+        for (let y = 0; y <= height; y+= clusterRange) {
+          grid.append('rect')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('width', clusterRange)
+            .attr('height', clusterRange)
+            .attr('class', 'grid')
+            .attr('id', 'invisRect');
+        }
+      }
 
       // for this data structure,
       // we need to return an Array of Arrays! (important!)
@@ -292,19 +346,19 @@ const drawMap = (container) => {
         ];
         return point;
       });
-                                   
-      console.log(latlongpoints); // should be array of arrays 
+      
+      //      console.log(latlongpoints); // should be array of arrays 
 
       let qTree = d3.quadtree()
           .addAll(latlongpoints); // adding points to quadtree
 
       console.log(qTree);
 
-      console.log('before for loop');
+
       for (let a = 0; a <= width; a += clusterRange) {
         for (let b = 0; b <= height; b += clusterRange) {
           let searched = search(qTree, a, b, a + clusterRange, b + clusterRange);
-          console.log(searched); // only (3) is working?
+          //          console.log(searched); // only (3) is working?
 
           let centerPoint = searched.reduce(function(prev, current) {
             return [prev[0] + current[0], prev[1] + current[1]];
@@ -320,10 +374,10 @@ const drawMap = (container) => {
         }
       }
 
-      svg.selectAll(".centerPoint")
+      svg.selectAll("circle")
         .data(clusterPoints)
-        .enter().append("circle")
-        .attr("class", function(d) {return "centerPoint";})
+        .enter().append("svg:circle")
+      //        .attr("class", function(d) {return "centerPoint";})
         .attr("cx", function(d) {return d[0];})
         .attr("cy", function(d) {return d[1];})
         .attr("fill", '#FFA500')
@@ -332,23 +386,23 @@ const drawMap = (container) => {
           console.log(d);
         });
 
-      // ! This is where we draw the circles on the map
-//       svg.selectAll("circle")
-//        .data(data)
-//        .enter()
-//        .append("svg:circle")
-//        .attr("transform", function (d) {
-//
-//          let long = parseFloat(d.LONGITUDE);
-//          let lat = parseFloat(d.LATITUDE);
-//          if (isNaN(long || lat)) { long = 0, lat = 0; }
-//          return "translate(" + projection([long, lat]) + ")";
-//        })
-//        .attr('r', 5)
-//        .style("fill", "rgb(217,91,67)")
-//        .style("opacity", 0.85)
-//        .on('mouseover', toolTip.show)
-//        .on('mouseout', toolTip.hide);
+      // ! This is where we draw the circles on the map (working!)
+      //       svg.selectAll("circle")
+      //        .data(data)
+      //        .enter()
+      //        .append("svg:circle")
+      //        .attr("transform", function (d) {
+      //
+      //          let long = parseFloat(d.LONGITUDE);
+      //          let lat = parseFloat(d.LATITUDE);
+      //          if (isNaN(long || lat)) { long = 0, lat = 0; }
+      //          return "translate(" + projection([long, lat]) + ")";
+      //        })
+      //        .attr('r', 5)
+      //        .style("fill", "rgb(217,91,67)")
+      //        .style("opacity", 0.85)
+      //        .on('mouseover', toolTip.show)
+      //        .on('mouseout', toolTip.hide);
 
 
       dropDown.on("change", function () {
@@ -364,12 +418,6 @@ const drawMap = (container) => {
           .filter(function (d) { return selected == d.Recipient; })
           .attr("display", display);
       });
-
-      //publicCheck.on('change', updateCheck); // on change event
-      //public.on('change', console.log('clicked'));
-      //private.on('change', console.log('checked private'));
-
-      //update(); // run checkbox state check
 
       /**
        * Section to check for checkbox state
@@ -395,10 +443,6 @@ const drawMap = (container) => {
             .attr('r', 5);
         }
       }
-
-      //console.log(data['LONGITUDE'], data["LATITUDE"][0]);
-
-      //console.log(LatLongObj);
 
     });
   }); // end of double d3 zone 
@@ -452,7 +496,8 @@ $(sectionFourtableBtn).click(function() {
 
 $(sectionFourmapBtn).click(function() {
   console.log('clicking map button!');
-  $('#mapContainerDiv').css('display', 'flex'); // donut! (set to inline-block from before)
+  $('#mapContainerDiv').css('display', 'flex'); 
+  $('#sectionFourTreemapContainerDiv').css('display', 'none'); 
 });
 
 $(sectionFourtreemapBtn).click(function() {

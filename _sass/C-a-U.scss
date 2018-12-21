@@ -5,11 +5,9 @@ $green: #50604f;
 $checked-color: #1877c1;
 $unchecked-color: #888;
 
-
 .CU {
-
-  /*
-  --------------------------------------------------------------------------------------------------------------------
+/*
+ --------------------------------------------------------------------------------------------------------------------
 *   PAGE LANDING
 *--------------------------------------------------------------------------------------------------------------------
 */
@@ -412,7 +410,7 @@ $unchecked-color: #888;
 
   .collegesMap {
 
-    //width: 70%;
+//    width: 70%;
     
     text-align: center;
     
@@ -447,9 +445,10 @@ $unchecked-color: #888;
   }
 
   #filtersDiv {
-    width: 40%;
+    width: 30%;
     margin-top: 50px;
     margin-left: 50px;
+    padding-right: 20px;
   }
 
 
@@ -508,6 +507,34 @@ $unchecked-color: #888;
     height: 70px;
     font-size: 15pt;
   }
+
+// on li click 
+  #treemapSidebarTable {
+    height: 80px;
+    font-size: 13pt;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+// on li click 
+  #sectionFourTreemapSidebarTable {
+    text-align: center;
+    height: 80px;
+    font-size: 13pt;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+// on li click 
+  #sectionThreeTreemapSidebarTable {
+    text-align: center;
+    height: 80px;
+    font-size: 13pt;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+
 
   .flex-rect {
     display: flex;
@@ -678,18 +705,22 @@ $unchecked-color: #888;
 
   #treemapContainerDiv {
     display: none;
-    margin-top: 25px;
+    margin-top: 100px;
+  }
+
+  #sectionThreeTreemapContainerDiv {
+    display: none;
+    margin-top: 100px;
   }
 
   #treemapSidebar {
-    width: 40%;
+//    width: 30%;
     height: 600px;
   }
 
   #sectionFourTreemapSidebar {
     width: 30%;
     height: 600px;
-//    margin-left: 75px;
   }
 
   #sectionFourTreemap {
@@ -698,13 +729,18 @@ $unchecked-color: #888;
   }
 
   #sectiontwoTreemap {
-    margin-left: 200px;
+    width: 40%;
+    margin-left: 150px;
+  }
+
+  #sectionThreeTreemap {
+    padding-left: 20px;
+    paddin-right: 20px;
   }
 
   .sidebarList {
-//    box-shadow: rgba(0,0,0, .4);
     text-align: left;
-    font-size: 9px;
+    font-size: 11px;
     height: 600px;
     width: auto;
     overflow: scroll;
@@ -712,19 +748,13 @@ $unchecked-color: #888;
   }
 
   .sectionFourSidebarList {
-//    box-shadow: rgba(0,0,0, .4);
     text-align: left;
-    font-size: 9px;
+    font-size: 11px;
     height: 600px;
     margin-left: 75px;
     width: auto;
     overflow: scroll;
     overflow-y: scroll;
-  }
-
-  .sidebarListElement:hover {
-    background-color: teal;
-//    opacity: .6;
   }
 
   .categoriesPanel {
@@ -741,7 +771,6 @@ $unchecked-color: #888;
   }
 
   #sectionFourTreemapContainerDiv {
-    margin-top: 25px;
     display: none;
     margin-top: 100px;
   }
@@ -750,7 +779,64 @@ $unchecked-color: #888;
     opacity: 100%;
     visibility: hidden;
   }
-  
+
+  // map clear button (section 4)
+  //
+  #clearBtn {
+    display: block;
+    -moz-box-shadow:inset 0px 1px 0px 0px #7a8eb9;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #7a8eb9;
+    box-shadow:inset 0px 1px 0px 0px #7a8eb9;
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #637aad), color-stop(1, #5972a7));
+    background:-moz-linear-gradient(top, #637aad 5%, #5972a7 100%);
+    background:-webkit-linear-gradient(top, #637aad 5%, #5972a7 100%);
+    background:-o-linear-gradient(top, #637aad 5%, #5972a7 100%);
+    background:-ms-linear-gradient(top, #637aad 5%, #5972a7 100%);
+    background:linear-gradient(to bottom, #637aad 5%, #5972a7 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#637aad', endColorstr='#5972a7',GradientType=0);
+    background-color:#637aad;
+    border:1px solid #314179;
+//    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:13px;
+    font-weight:bold;
+    padding:6px 12px;
+    text-decoration:none;
+  }
+  #clearBtn:hover {
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #5972a7), color-stop(1, #637aad));
+    background:-moz-linear-gradient(top, #5972a7 5%, #637aad 100%);
+    background:-webkit-linear-gradient(top, #5972a7 5%, #637aad 100%);
+    background:-o-linear-gradient(top, #5972a7 5%, #637aad 100%);
+    background:-ms-linear-gradient(top, #5972a7 5%, #637aad 100%);
+    background:linear-gradient(to bottom, #5972a7 5%, #637aad 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#5972a7', endColorstr='#637aad',GradientType=0);
+    background-color:#5972a7;
+  }
+  #clearBtn:active {
+    position:relative;
+    top:1px;
+  }
+
+  #rounded { 
+    border-radius: 15px; 
+    -moz-border-radius: 15px; 
+    -webkit-border-radius: 15px; 
+  }  
+
+  .searchPadding {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+  }
+
+  ::placeholder {
+    font-size: 11px;
+  }
+
 
 } // end of .CU
 

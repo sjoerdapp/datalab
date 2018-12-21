@@ -7,7 +7,6 @@ const graphContainer = document.getElementById('categoriesChartContainer');
 const panelBack = document.getElementById('categories_panel_back_btn');
 const panel = document.getElementById('categoriesPanel');
 const childrenPanel = document.getElementById('childrenPanel');
-//const childrenPanel = document.getElementById('')
 const panelChartContainer = document.getElementById('investmentCategories_panel_chart');
 const pageTurnRt = document.getElementById('cat_rt_pg_turn');
 const pageTurnLt = document.getElementById('cat_lt_pg_turn');
@@ -23,9 +22,8 @@ let categoriesData = {};
 let parentdonutData = {};
 
 // Finally see how he does it - going to follow his method to dupe the 
-// pie chart into a table view.
+// pie chart into a table view...
 let tableData = {};
-
 
 /*
   --------------------------------------------------------------------------------------------------------------------
@@ -334,9 +332,9 @@ function createTable(container, columns) {
     /**
      * Winter Cleaning...
      */
-    tableData.forEach(n => { n.percentage = ((n.total / total) * 100) + "%" }); // changing to percent 
+    tableData.forEach(n => { n.percentage = ((n.total / total) * 100) + "%"; }); // changing to percent 
     //tableData.forEach(n => { n.percentage = (n.total / total) });
-    tableData.sort((a, b) => { return b.percentage - a.percentage });
+    tableData.sort((a, b) => { return b.percentage - a.percentage; });
     tableData.forEach(n => delete n.abbrv); // get rid of abbrev name, we dont need it     
 
     if (error) throw error;
@@ -420,6 +418,70 @@ function createTable(container, columns) {
 /**
  * 
  * @param {*} parentName - name to search by
+ * Secondary Table (Investment) for Click event on treemap li
+ * Need to grab different data than "tableData" in last table draw
+ */
+function createSecondaryTreemapTable(parentName, columns) {
+  d3.csv("/data-lab-data/Edu_PSC.csv", function (error, data) {
+
+    d3.select('#treemapSidebarTable').remove(); // remove on click data 
+
+    /**
+     * Create Secondary Table (Investment Types Table)
+     */
+    let subTableDiv = d3.select('#treemapContainerDiv').append('div')
+        .attr('id', 'treemapSidebarTable');
+    let subTableHeaderText = subTableDiv.append('h4').html(parentName); //replace with data TR name...
+    subTableHeaderText.append('hr')
+      .style('width', '30%')
+      .style('display', 'flex');
+    subTableHeaderText.append('p').html('Investment Types').attr('class', 'investmenth4');
+    let subTable = subTableDiv.append('table')
+        .attr('class', 'subTableData')
+        .attr('align', 'center');
+
+
+    let titles = ['Type', 'Awarded Amount  ', '  % of Total'];
+    let mockData = [
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+      { "Type": "Grant: Student", "Awarded Amount": "$1000", "% of Total": "20%" },
+    ];
+
+    let headers = subTable.append('thead').append('tr')
+        .selectAll('th')
+        .data(titles).enter()
+        .append('th')
+        .text(function (d) {
+          return d;
+        });
+
+    let rows = subTable.append('tbody')
+        .selectAll('tr')
+        .data(mockData).enter()
+        .append('tr');
+
+    rows.selectAll('td')
+      .data(function (row) {
+        return columns.map(function (column) {
+          return { column: column, value: row[column] };
+        });
+      }).enter()
+      .append('td')
+      .text(function (d) {
+        return d.value;
+      })
+      .attr('data-th', function (d) {
+        return d.name;
+      });
+  });
+}
+
+/**
+ * 
+ * @param {*} parentName - name to search by
  * Secondary Table (Investment) for Click event on table row
  * Need to grab different data than "tableData" in last table draw
  */
@@ -429,8 +491,6 @@ function createSecondaryTableView(parentName, columns) {
     let secondaryTableData = data.filter(function (d) {
       return d.parent_name == parentName;
     });
-
-    //console.log(secondaryTableData);
 
     if (error) throw error;
 
@@ -488,12 +548,26 @@ function createSecondaryTableView(parentName, columns) {
   });
 }
 
+
+
 /**
  * Create First TreeMap (could be reusable later)
  * for Section2 Table/view Toggle
  */
 function treeMap(categoriesData) {
   d3.csv('/data-lab-data/Edu_PSC.csv', (data) => {
+
+    let docWidth = document.documentElement.offsetWidth;
+
+    // REMOVE this sooner or later..
+    [].forEach.call(
+      document.querySelectorAll('*'),
+      function(el) {
+        if (el.offsetWidth > docWidth) {
+          console.log(el);
+        }
+      }
+    );
 
 
     let parentNames = data.map(d => d.parent_name);
@@ -508,16 +582,45 @@ function treeMap(categoriesData) {
     let sidebarList = d3.select('#treemapSidebar')
         .append('ul').attr('class', 'sidebarList');
 
-    sidebarList.selectAll('li')
+    sidebarList.append('input')
+      .attr('class', 'search')
+      .attr('class','rounded') // round them corners
+      .attr('class', 'searchPadding') // little paddin'
+      .attr('placeholder', 'Search...');
+
+    // helper function to be called in click event
+    function showSidebarList() {
+      console.log('showing sidebar');
+      sidebarList.style('display', 'block');
+    }
+
+    function goBack() {
+      console.log('going back a view');
+      d3.select('#backBtn').remove(); // get rid of the back button
+      d3.select('treemapSidebartable').remove(); // get right of right side table as well
+    }
+
+    let li = sidebarList.selectAll('li')
       .data(filteredNames)
       .enter()
       .append('li')
       .attr('class', 'sidebarListElement')
+      .on('click', function(d) {
+        createSecondaryTreemapTable(d, ['Type', 'Awarded Amount', '% of Total']); // d has the "name", and pass in columns
+        sidebarList.style('display', 'none'); // hide on click
+        d3.select('#sectionFourTreemap')
+          .insert('input')
+          .attr('id', 'backBtn')
+          .attr('type', 'button')
+          .attr('value', 'Back')
+          .attr('onclick', 'goBack()'); // on button click, run goBack();
+      })
       .html(String);
+
 
     ///////////////////////
     // start Treemappin' // 
-    let width = 2000,
+    let width = 1300,
         height = 600;
 
     let color = d3.scaleOrdinal()
@@ -544,10 +647,8 @@ function treeMap(categoriesData) {
 
     categoriesData.unshift(rootNode); // add root node to beginning of array
 
-
     let stratify = d3.stratify()
         .id(function(d) {
-//          console.log(d);
           return d.name; })
         .parentId(function(d) { return d.parent; });
 
@@ -559,9 +660,8 @@ function treeMap(categoriesData) {
         .append('svg')
         .style('width', width)
         .style('height', height);
-//        .style('position', 'relative');
 
-    treeMappy(root); // stratify and get the root ready
+    treeMappy(root); // stratify and get the root ready for treemappin' (d3 v4)
 
     let leaf = treeMapContainer
         .selectAll('g')
@@ -573,7 +673,7 @@ function treeMap(categoriesData) {
       .attr('x', function(d) {return d.x0; })
       .attr('y', function(d) {return d.y0; });
 //      .text(d => {
-//        return d.id + "\n" + format(d.value);
+//        return d.id;
 //      });
         
 
@@ -583,7 +683,6 @@ function treeMap(categoriesData) {
       .attr("fill-opacity", 0.6)
       .attr("width", d => d.x1 - d.x0)
       .attr("height", d => d.y1 - d.y0);
-
 
   }); 
 }; // end function
@@ -795,6 +894,7 @@ d3.csv("/data-lab-data/Edu_PSC.csv",(data) => {
   $(treemapBtn).click(function() {
     console.log('clicking treemap button!');
     $('#treemapContainerDiv').css('display', 'flex'); // tree
+    $('#treemapContainerDiv').css('justify-conent', 'space-evenly'); // tree
     $('#tableContainerDiv').css('display', 'none'); // table 
     $('#categoriesPanel').css('display', 'none'); // donut
     $('#investmentCategories_panel_chart').css('display', 'none'); // donut 
